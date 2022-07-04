@@ -5,7 +5,7 @@
 |  __/ | |   | (_) || (_| || |   | (_| || | | | | || | | | | ||  __/| |    |  _|  | (_) | >  < 
 |_|    |_|    \___/  \__, ||_|    \__,_||_| |_| |_||_| |_| |_| \___||_|    |_|     \___/ /_/\_\
                      |___/                                                                     ");
-Console.WriteLine("Commands: \"add\", \"remove\", \"show\", \"clear\" (book), \"save\", \"open\", \"help\", \"stop\"\n");
+Console.WriteLine("Commands: \"add\", \"remove\", \"change\", \"swap\", \"show\", \"clear\" (book), \"save\", \"open\", \"help\", \"stop/exit\"\n");
 
 AddressBook addressBook = new AddressBook();
 addressBook.handle += DisplayPeoples;
@@ -18,7 +18,19 @@ while (true)
     String[] command = line.Split();
     if (command[0].ToLower() == "add")
     {
-        if(command.Length == 4) addressBook.Add(new PersonInfo(command[1], command[2], command[3]));
+        if (command.Length == 4) addressBook.Add(new PersonInfo(command[1], command[2], command[3]));
+        else Console.WriteLine("Error!");
+    }
+    else if (command[0].ToLower() == "change")
+    {
+        int num;
+        if (int.TryParse(command[1], out num) && command.Length == 5) addressBook.Change(num, new PersonInfo(command[2], command[3], command[4]));
+        else Console.WriteLine("Error!");
+    }
+    else if (command[0].ToLower() == "swap")
+    {
+        int index1, index2;
+        if (int.TryParse(command[1], out index1) && int.TryParse(command[2], out index2) && command.Length == 3) addressBook.Swap(index1, index2);
         else Console.WriteLine("Error!");
     }
     else if(command[0].ToLower() == "show")
@@ -35,7 +47,7 @@ while (true)
     {
         addressBook.Clear();
     }
-    else if (command[0].ToLower() == "stop")
+    else if (command[0].ToLower() == "stop" || command[0].ToLower() == "exit")
     {
         break;
     }
@@ -53,13 +65,15 @@ while (true)
     }
     else if (command[0].ToLower() == "help")
     {
-        Console.WriteLine("┌ add <first name> <last name> <address>");
+        Console.WriteLine("┌ add <first name> <last name> <address> (don't use only \"_\" symbol)");
         Console.WriteLine("├ remove <index> (beginning with 1)");
+        Console.WriteLine("├ change <index> <first name> <last name> <address> (if you do not want to change the element, enter \"_\" in the field)");
+        Console.WriteLine("├ swap <index 1> <index 2>");
         Console.WriteLine("├ show");
         Console.WriteLine("├ clear");
         Console.WriteLine("├ save <path> <name>");
         Console.WriteLine("├ open <path> <name>");
-        Console.WriteLine("└ stop");
+        Console.WriteLine("└ stop/exit");
     }
     else
     {
@@ -83,8 +97,20 @@ struct PersonInfo
     public PersonInfo(string? firstName, string? lastName, string? address)
     {
         FirstName = firstName;
-        LastName = lastName;
-        Address = address;
+        LastName  = lastName;
+        Address   = address;
+    }
+    public void Validate()
+    {
+        FirstName = FirstName == "_" ? "None" : FirstName;
+        LastName  = LastName  == "_" ? "None" : LastName;
+        Address   = Address   == "_" ? "None" : Address;
+    }
+    public void Change(PersonInfo person)
+    {
+        FirstName = person.FirstName == "_" ? FirstName : person.FirstName;
+        LastName  = person.LastName  == "_" ? LastName  : person.LastName;
+        Address   = person.Address   == "_" ? Address   : person.Address;
     }
 }
 
@@ -102,6 +128,7 @@ class AddressBook
 
     public void Add(PersonInfo person)
     {
+        person.Validate();
         Peoples.Add(person);
     }
     public void Remove(int index)
@@ -109,6 +136,30 @@ class AddressBook
         index -= 1;
         if(index < Peoples.Count && index >= 0) Peoples.RemoveAt(index);
         else handle?.Invoke("Error!!!");
+    }
+    public void Change(int index, PersonInfo person)
+    {
+        index -= 1;
+        if (index < Peoples.Count && index >= 0)
+        {
+            PersonInfo per = Peoples[index];
+            per.Change(person);
+            Peoples[index] = per;
+        } 
+        else handle?.Invoke("Error!!!");
+    }
+    public void Swap(int index1, int index2)
+    {
+        index1 -= 1;
+        index2 -= 1;
+        if (index1 < Peoples.Count && index1 >= 0 && index2 < Peoples.Count && index2 >= 0)
+        {
+            PersonInfo tmp = Peoples[index1];
+            Peoples[index1] = Peoples[index2];
+            Peoples[index2] = tmp;
+        }
+        else handle?.Invoke("Error!!!");
+
     }
     public void Clear()
     {
