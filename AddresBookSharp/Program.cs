@@ -5,7 +5,7 @@
 |  __/ | |   | (_) || (_| || |   | (_| || | | | | || | | | | ||  __/| |    |  _|  | (_) | >  < 
 |_|    |_|    \___/  \__, ||_|    \__,_||_| |_| |_||_| |_| |_| \___||_|    |_|     \___/ /_/\_\
                      |___/                                                                     ");
-Console.WriteLine("Commands: \"add\", \"remove\", \"change\", \"swap\", \"show\", \"clear\" (book), \"save\", \"open\", \"help\", \"stop/exit\"\n");
+Console.WriteLine("Commands: \"add\", \"remove\", \"change\", \"swap\", \"show\", \"clear\", \"sort\", \"save\", \"open\", \"help\", \"stop/exit\"\n");
 
 AddressBook addressBook = new AddressBook();
 addressBook.handle += DisplayPeoples;
@@ -47,6 +47,18 @@ while (true)
     {
         addressBook.Clear();
     }
+    else if (command[0].ToLower() == "sort")
+    {
+        if(command.Length == 1) addressBook.Sort();
+        else if (command.Length == 2)
+        {
+            if(command[1].ToLower()      == "firstname") addressBook.Sort(AddressBook.SortBy.FirstName);
+            else if(command[1].ToLower() == "lastname")  addressBook.Sort(AddressBook.SortBy.LastName);
+            else if(command[1].ToLower() == "address")   addressBook.Sort(AddressBook.SortBy.Address);
+            else Console.WriteLine("Error!");
+        }
+        else Console.WriteLine("Error!");
+    }
     else if (command[0].ToLower() == "stop" || command[0].ToLower() == "exit")
     {
         break;
@@ -70,7 +82,9 @@ while (true)
         Console.WriteLine("├ change <index> <first name> <last name> <address> (if you do not want to change the element, enter \"_\" in the field)");
         Console.WriteLine("├ swap <index 1> <index 2>");
         Console.WriteLine("├ show");
-        Console.WriteLine("├ clear");
+        Console.WriteLine("├ clear (book)");
+        Console.WriteLine("├ sort (by first name)");
+        Console.WriteLine("├ sort <firstname/lastname/address>");
         Console.WriteLine("├ save <path> <name>");
         Console.WriteLine("├ open <path> <name>");
         Console.WriteLine("└ stop/exit");
@@ -116,6 +130,13 @@ struct PersonInfo
 
 class AddressBook
 {
+    public enum SortBy
+    { 
+        FirstName,
+        LastName,
+        Address
+    }
+
     public delegate void PlayerHandle(String Message);
     public event PlayerHandle? handle = null;
 
@@ -179,6 +200,32 @@ class AddressBook
         {
             handle?.Invoke("Address book empty");
         }
+    }
+    public void Sort()
+    {
+        Peoples = Peoples.OrderBy(x => x.FirstName).ToList();
+    }
+    public void Sort(SortBy type)
+    {
+        switch(type)
+        {
+            case SortBy.FirstName:
+            {
+                Peoples = Peoples.OrderBy(x => x.FirstName).ToList();
+                break;
+            }
+            case SortBy.LastName:
+            {
+                Peoples = Peoples.OrderBy(x => x.LastName).ToList();
+                break;
+            }
+            case SortBy.Address:
+            {
+                Peoples = Peoples.OrderBy(x => x.Address).ToList();
+                break;
+            }
+        }
+        
     }
 
     private String TableToStr()
